@@ -26,16 +26,25 @@ server.post('/categories', async(req, res) => {
     const { error } = categorySchema.validate(newCategory);
 
     if (error) {
-        return res.sendStatus(422);
+        return res.sendStatus(400);
     }
 
-    await connection.query(
-        `INSERT INTO categories (name) VALUES ($1);`, [
+    const { rows: alreadyExists } = await connection.query(
+        `SELECT * FROM categories WHERE name=$1`, [
             newCategory.name
         ]
     );
 
-    res.sendStatus(201);
+    if (alreadyExists.length === 0) {
+        await connection.query(
+            `INSERT INTO categories (name) VALUES ($1);`, [
+                newCategory.name
+            ]
+        );
+        res.sendStatus(201);
+    } else {
+        return res.sendStatus(409);
+    }
 })
 
 server.listen(4000, () => {
