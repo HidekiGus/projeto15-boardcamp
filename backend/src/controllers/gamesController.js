@@ -2,6 +2,29 @@ import connection from "../dbStrategy/postgres.js";
 import joi from "joi";
 
 // GET Games - Envia lista de jogos
+export async function getGames(req, res) {
+    try {
+        const name = req.query.name;
+        if (name) {
+            const { rows: games } = await connection.query(`
+            SELECT games.*, categories.id, categories.name as categoryName FROM games
+            JOIN categories
+            ON games."categoryId" = categories.id
+            WHERE games.name ILIKE '${name}%';
+            `)
+            res.send(games).status(200);
+        } else {
+            const { rows: games } = await connection.query(`
+            SELECT games.*, categories.id, categories.name as categoryName FROM games
+            JOIN categories
+            ON games."categoryId" = categories.id;
+            `)
+            res.send(games).status(200);
+        }
+    } catch(error) {
+        return res.sendStatus(500);
+    }
+}
 
 //POST Games - Insere um jogo
 export async function postGames(req, res) {
@@ -35,7 +58,6 @@ export async function postGames(req, res) {
             return res.sendStatus(409);
         }
     } catch(error) {
-        console.log(error);
         return res.sendStatus(500);
     }
 }
