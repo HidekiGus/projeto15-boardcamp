@@ -1,4 +1,5 @@
-import connection from "../dbStrategy/postgres";
+import connection from "../dbStrategy/postgres.js";
+import joi from "joi";
 
 // GET Categories - Envia categorias
 export async function getCategories(req, res) {
@@ -28,7 +29,7 @@ export async function postCategories(req, res) {
     
         // alreadyExists contém os elementos que possuem o mesmo nome da categoria nova recebida pelo body
         const { rows: alreadyExists } = await connection.query(
-            `SELECT * FROM categories WHERE name=$1`, [
+            `SELECT * FROM categories WHERE name=$1;`, [
                 newCategory.name
             ]
         );
@@ -45,6 +46,7 @@ export async function postCategories(req, res) {
             return res.sendStatus(409);
         }
     } catch(error) {
+        console.log(error);
         return res.sendStatus(500);
     }
 }
