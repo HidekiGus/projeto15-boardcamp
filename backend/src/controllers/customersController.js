@@ -57,3 +57,41 @@ export async function postCustomers(req, res) {
         res.sendStatus(500);
     }
 }
+
+// PUT Customers - Atualiza um cliente
+export async function putCustomers(req, res) {
+    try {
+        const { id } = req.params;
+        const updateCustomer = req.body;
+
+        const customerSchema = joi.object({
+            name: joi.string().required(),
+            phone: joi.string().pattern(new RegExp(/^([0-9]{10}|[0-9]{11})$/)).required(),
+            cpf: joi.string().pattern(new RegExp(/[0-9]{11}/)).required(),
+            birthday: joi.string().required()
+        })
+
+        const { error } = customerSchema.validate(updateCustomer);
+
+        if (error) {
+            return res.sendStatus(400);
+        } else {
+            const { rows: alreadyExists } = await connection.query(`SELECT * FROM customers WHERE cpf='${updateCustomer.cpf}'`);
+            if (alreadyExists.length === 0) {
+                await connection.query(`UPDATE customers 
+                    SET name='${updateCustomer.name}',
+                        phone='${updateCustomer.phone}',
+                        cpf='${updateCustomer.cpf}',
+                        birthday='${updateCustomer.birthday}'
+                    WHERE id=${id};`
+                );
+                return res.sendStatus(201);
+            } else {
+                return res.sendStatus(409);
+            }
+        }
+    } catch(error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
