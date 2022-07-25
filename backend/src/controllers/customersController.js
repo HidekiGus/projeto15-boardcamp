@@ -4,19 +4,24 @@ import joi from "joi";
 //GET Customers - Envia lista de clientes
 export async function getCustomers(req, res) {
     try {
-        const cpf = req.query.cpf;
-        if (cpf) {
+        const { cpf } = req.query;
+        const { id } = req.params;
+        if (cpf) { // Se tiver cpf na query
             const { rows: customers } = await connection.query(`SELECT * FROM customers WHERE cpf LIKE '${cpf}%';`);
             return res.send(customers).status(200);
-        } else {
-            const { rows: customers } = await connection.query(`SELECT * FROM customers;`);
-            return res.send(customers).status(200);
+        } else { // Se não tiver cpf
+            if (id) { // Se tiver id no params, busca por id
+                const { rows: customers } = await connection.query(`SELECT * FROM customers WHERE id=${parseInt(id)};`);
+                return res.send(customers).status(200);
+            } else { // Se não tiver cpf nem id pega todos os customers
+                const { rows: customers } = await connection.query(`SELECT * FROM customers;`);
+                return res.send(customers).status(200);
+            }
         }
     } catch(error) {
         return res.sendStatus(500);
     }
 }
-
 
 // POST Customers - Insere um cliente
 export async function postCustomers(req, res) {
