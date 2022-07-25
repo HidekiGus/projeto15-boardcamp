@@ -147,3 +147,21 @@ export async function postParamsRentals(req, res) {
         return res.sendStatus(500);
     }
 }
+
+// DELETE Rentals
+export async function deleteRentals(req, res) {
+    try {
+        const { id } = req.params;
+        const { rows: data } = await connection.query(`SELECT * FROM rentals WHERE id=${id};`);
+        if (data.length === 0) { // Se o id não for encontrado
+            return res.sendStatus(404);
+        } else if (data[0].returnDate === null) { // Se o id foi encontrado e se returnDate é null (ou seja, não foi devolvido)
+            return res.sendStatus(400);
+        } else { // Se o id foi encontrado e se foi devolvido
+            await connection.query(`DELETE FROM rentals WHERE id=${id};`);
+            return res.sendStatus(200);
+        }
+    } catch(error) {
+        return res.sendStatus(500);
+    }
+}
