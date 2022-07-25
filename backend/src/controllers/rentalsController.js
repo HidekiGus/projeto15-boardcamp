@@ -104,3 +104,41 @@ export async function postRentals(req, res) {
     }
 }
 
+// POST Rentals /:id/return
+export async function postParamsRentals(req, res) {
+    try {
+        const { id } = req.params;
+        const { rows: data } = await connection.query(`SELECT * FROM rentals WHERE id=${id};`);
+        const returnDate = dayjs().format('YYYY-MM-DD');
+        let calculatedDelayFee = 0;
+        
+        // Dates
+        const dateReturnDate = new Date(returnDate);
+        const dateRentDate = new Date(data[0].rentDate);
+
+        // Dates in ms
+        const msReturnDate = dateReturnDate.getTime();
+        const msRentDate = dateRentDate.getTime();
+
+        // Limit date for return
+        const limitReturnDate = msRentDate + ((1000*60*60*24)*parseInt(data[0].daysRented));
+        
+        // Diferença entre o limite de devolução e a data de retorno
+        const differenceInMs = msReturnDate - limitReturnDate;
+        // Dias de diferença entre o limite e a data de retorno
+        const days = differenceInMs/(1000 * 60 * 60 * 24);
+        
+        if (days < 0) { // Se for negativo, tem dias sobrando. Não paga multa
+            calculatedDelayFee = 0;
+        } else { // Se for positivo, tem dias faltando. Paga multa
+            const { rows: gameInfo } = await connection.query(`SELECT * FROM games WHERE id=${data[0].gameId};`);
+            calculatedDelayFee = gameInfo[0].pricePerDay * Math.ceil(days);
+        }
+
+        await connection.query(`UPDATE rentals SET "returnDate"='${returnDate}', "delayFee"=${calculatedDelayFee} WHERE id=${id};`);
+
+        return res.sendStatus(200);
+    } catch(error) {
+        return res.sendStatus(500);
+    }
+}
