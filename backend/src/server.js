@@ -16,6 +16,6 @@ server.use(gamesRouter);
 server.use(customersRouter);
 server.use(rentalsRouter);
 
-server.listen(4009, () => {
+server.listen(4000, () => {
     console.log("Servidor rodando!");
 });
