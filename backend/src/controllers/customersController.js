@@ -2,6 +2,21 @@ import connection from "../dbStrategy/postgres.js";
 import joi from "joi";
 
 //GET Customers - Envia lista de clientes
+export async function getCustomers(req, res) {
+    try {
+        const cpf = req.query.cpf;
+        if (cpf) {
+            const { rows: customers } = await connection.query(`SELECT * FROM customers WHERE cpf LIKE '${cpf}%';`);
+            return res.send(customers).status(200);
+        } else {
+            const { rows: customers } = await connection.query(`SELECT * FROM customers;`);
+            return res.send(customers).status(200);
+        }
+    } catch(error) {
+        return res.sendStatus(500);
+    }
+}
+
 
 // POST Customers - Insere um cliente
 export async function postCustomers(req, res) {
