@@ -12,7 +12,11 @@ export async function getCustomers(req, res) {
         } else { // Se não tiver cpf
             if (id) { // Se tiver id no params, busca por id
                 const { rows: customers } = await connection.query(`SELECT * FROM customers WHERE id=${parseInt(id)};`);
-                return res.send(customers).status(200);
+                if (customers.length === 0) { // Se não encontra clientes com esse id
+                    return res.sendStatus(404);
+                } else { // Se encontra o cliente com esse id
+                    return res.send(customers).status(200);
+                }
             } else { // Se não tiver cpf nem id pega todos os customers
                 const { rows: customers } = await connection.query(`SELECT * FROM customers;`);
                 return res.send(customers).status(200);
