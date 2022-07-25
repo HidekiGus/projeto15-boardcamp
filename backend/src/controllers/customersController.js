@@ -1,9 +1,12 @@
 import connection from "../dbStrategy/postgres.js";
 import joi from "joi";
+import dayjs from "dayjs";
 
 //GET Customers - Envia lista de clientes
 export async function getCustomers(req, res) {
     try {
+        const day = dayjs();
+        console.log(day);
         const { cpf } = req.query;
         const { id } = req.params;
         if (cpf) { // Se tiver cpf na query
