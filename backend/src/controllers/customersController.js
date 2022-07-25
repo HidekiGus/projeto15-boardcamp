@@ -26,7 +26,7 @@ export async function getCustomers(req, res) {
             }
         }
     } catch(error) {
-        return res.sendStatus(500);
+        return res.sendStatus(500); 
     }
 }
 

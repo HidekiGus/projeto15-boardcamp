@@ -3,6 +3,50 @@ import joi from "joi";
 import dayjs from "dayjs";
 
 // GET Rentals
+export async function getRentals(req, res) {
+    try {
+        const { customerId, gameId } = req.query;
+        const { rows: data } = await connection.query(`
+            SELECT rentals.*, customers.name as "customerName", customers.id, games.name as "gameName", games."categoryId" as "gamesCategoryId", categories.name as "categoryName" FROM rentals
+            JOIN customers
+            ON rentals."customerId"=customers.id
+            JOIN games
+            ON rentals."gameId"=games.id
+            JOIN categories
+            ON games."categoryId"=categories.id
+            ${customerId ? `WHERE rentals."customerId"=${customerId}` : ''}
+            ${gameId ? customerId && gameId ? `AND rentals."gameId"=${gameId}` : `WHERE rentals."gameId"=${gameId}` : ''}
+            ;`
+            );
+
+        const arrayWithCustomerAndGame = data.map((item) => {
+            const obj = {
+                ...item,
+                customer: {
+                    id: item.customerId,
+                    name: item.customerName
+                },
+                game: {
+                    id: item.gameId,
+                    name: item.gameName,
+                    categoryId: item.gamesCategoryId,
+                    categoryName: item.categoryName
+                }
+            };
+
+            delete obj.customerName;
+            delete obj.gameName;
+            delete obj.gamesCategoryId;
+            delete obj.categoryName;
+
+            return obj;
+        });
+        res.send(arrayWithCustomerAndGame).status(201);
+    } catch(error) {
+        console.log(error)
+        return res.sendStatus(500);
+    }
+}
 
 // POST Rentals
 export async function postRentals(req, res) {
@@ -59,3 +103,4 @@ export async function postRentals(req, res) {
         return res.sendStatus(500);
     }
 }
+
