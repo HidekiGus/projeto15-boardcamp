@@ -109,6 +109,11 @@ export async function postParamsRentals(req, res) {
     try {
         const { id } = req.params;
         const { rows: data } = await connection.query(`SELECT * FROM rentals WHERE id=${id};`);
+        if (data.length === 0) { // Se id não existir
+            return res.sendStatus(404);
+        } else if (data[0].returnDate !== null) {
+            return res.sendStatus(400);
+        }
         const returnDate = dayjs().format('YYYY-MM-DD');
         let calculatedDelayFee = 0;
         
